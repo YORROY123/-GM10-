@@ -95,16 +95,17 @@ st.markdown("""
 # ─────────────────────────────────────────────
 # Sensor Layout Definition
 # ─────────────────────────────────────────────
-# Inside sensors grid (viewed from top, front=top)
+# 3D positions: x=左右(0=左,1=右), y=前後(0=前,1=後), z=上下(0=下,1=上)
+# Based on PPTX diagram: 8 corners of the cold storage box
 INSIDE_SENSORS = {
-    'CH2': {'label': 'CH2\n前-左', 'col_key': 'CH2(測試通道_02)', 'x': 0.25, 'y': 0.85},
-    'CH1': {'label': 'CH1\n前-右', 'col_key': 'CH1(測試通道_01)', 'x': 0.75, 'y': 0.85},
-    'CH4': {'label': 'CH4\n中前-左', 'col_key': 'CH4(通道 4)', 'x': 0.25, 'y': 0.60},
-    'CH3': {'label': 'CH3\n中前-右', 'col_key': 'CH3(通道 3)', 'x': 0.75, 'y': 0.60},
-    'CH6': {'label': 'CH6\n中後-左', 'col_key': 'CH6(通道 6)', 'x': 0.25, 'y': 0.38},
-    'CH5': {'label': 'CH5\n中後-右', 'col_key': 'CH5(通道 5)', 'x': 0.75, 'y': 0.38},
-    'CH8': {'label': 'CH8\n後-左',  'col_key': 'CH8(通道 8)', 'x': 0.25, 'y': 0.15},
-    'CH7': {'label': 'CH7\n後-右',  'col_key': 'CH7(通道 7)', 'x': 0.75, 'y': 0.15},
+    'CH1': {'label': 'CH1 前右上', 'col_key': 'CH1(測試通道_01)', 'pos': (1, 0, 1)},
+    'CH2': {'label': 'CH2 前左上', 'col_key': 'CH2(測試通道_02)', 'pos': (0, 0, 1)},
+    'CH3': {'label': 'CH3 前左下', 'col_key': 'CH3(通道 3)',      'pos': (0, 0, 0)},
+    'CH4': {'label': 'CH4 前右下', 'col_key': 'CH4(通道 4)',      'pos': (1, 0, 0)},
+    'CH5': {'label': 'CH5 後右上', 'col_key': 'CH5(通道 5)',      'pos': (1, 1, 1)},
+    'CH6': {'label': 'CH6 後左上', 'col_key': 'CH6(通道 6)',      'pos': (0, 1, 1)},
+    'CH7': {'label': 'CH7 後左下', 'col_key': 'CH7(通道 7)',      'pos': (0, 1, 0)},
+    'CH8': {'label': 'CH8 後右下', 'col_key': 'CH8(通道 8)',      'pos': (1, 1, 0)},
 }
 
 OUTSIDE_SENSORS = {
@@ -311,110 +312,319 @@ st.markdown("<br>", unsafe_allow_html=True)
 # ─────────────────────────────────────────────
 col_left, col_right = st.columns([1, 2])
 
-# ── LEFT: Cold Storage Floor Plan ──
+# ── LEFT: Module 1 (庫內) + Module 2 (庫外) ──
 with col_left:
-    st.markdown("<div class='section-title'>🗺️ 冷庫平面圖（庫內溫度分布）</div>", unsafe_allow_html=True)
+    st.markdown("""
+    <div style='background:linear-gradient(90deg,#0d2040,#0a1a30);
+         border:1px solid #1e5f9f; border-radius:8px; padding:8px 14px; margin-bottom:8px;
+         font-size:0.82rem; color:#7ab3d4; text-align:center;'>
+        🔬 <b style='color:#4fc3f7'>GM10 儀器</b> &nbsp;|&nbsp;
+        <span style='color:#42a5f5'>Module 1 庫內</span> (CH1-CH8) &nbsp;+&nbsp;
+        <span style='color:#ffa726'>Module 2 庫外</span> (CH101-CH106)
+    </div>
+    """, unsafe_allow_html=True)
 
-    # Build heatmap-style scatter on a floor plan
-    fig_floor = go.Figure()
+    mod_tab1, mod_tab2 = st.tabs(["❄️ Module 1 庫內 3D", "🌡️ Module 2 庫外"])
 
-    # Draw floor boundary
-    fig_floor.add_shape(type="rect", x0=0, y0=0, x1=1, y1=1,
-                        fillcolor="#0d1b2e", line=dict(color="#1e5f9f", width=3))
-    # Door indicator (front)
-    fig_floor.add_shape(type="rect", x0=0.35, y0=0.96, x1=0.65, y1=1.04,
-                        fillcolor="#c8902a", line=dict(color="#f0b030", width=2))
-    fig_floor.add_annotation(x=0.5, y=1.06, text="門(正面)", showarrow=False,
-                             font=dict(size=10, color="#f0b030"), xref="x", yref="y")
+    with mod_tab1:
+        st.markdown("<div class='section-title'>Module 1 — 庫內 8點溫度分布（2×4 量測點）</div>",
+                    unsafe_allow_html=True)
+        fig_floor = go.Figure()
 
-    # Grid lines (shelves)
-    for y in [0.73, 0.49, 0.27]:
-        fig_floor.add_shape(type="line", x0=0.05, y0=y, x1=0.95, y1=y,
-                            line=dict(color="#1e3a5f", width=1, dash="dot"))
-
-    # Sensor bubbles
-    for name, s in INSIDE_SENSORS.items():
-        val = latest[s['col_key']]
-        color = temp_color(val)
-        # Size by relative warmth
-        sz = 50 + 30 * ((val - (-25)) / 15)
-        fig_floor.add_trace(go.Scatter(
-            x=[s['x']], y=[s['y']],
-            mode='markers+text',
-            marker=dict(size=sz, color=color, opacity=0.9,
-                        line=dict(color='white', width=1.5)),
-            text=[f"{val:.1f}°C"],
-            textposition="middle center",
-            textfont=dict(size=9, color='white', family='Arial Black'),
-            name=name,
-            hovertemplate=f"<b>{name}</b><br>{s['label'].replace(chr(10),' ')}<br>溫度: {val:.2f}°C<extra></extra>",
-            showlegend=False
-        ))
-        # Label below
-        fig_floor.add_annotation(
-            x=s['x'], y=s['y'] - 0.09,
-            text=name, showarrow=False,
-            font=dict(size=8, color="#7ab3d4"), xref="x", yref="y"
-        )
-
-    # Colorbar legend (manual gradient bar)
-    fig_floor.add_trace(go.Scatter(
-        x=[None], y=[None],
-        mode='markers',
-        marker=dict(
-            colorscale=[[0,'rgb(30,80,200)'], [0.5,'rgb(80,180,220)'], [1,'rgb(200,220,255)']],
-            cmin=-25, cmax=-10,
-            colorbar=dict(
-                title=dict(text="°C", font=dict(color="#7ab3d4")),
-                tickfont=dict(color="#7ab3d4"),
-                len=0.6, thickness=12,
-                x=1.02,
-                tickvals=[-25,-20,-15,-10],
-            ),
-            showscale=True,
-            color=[avg_T],
-            size=0.1
-        ),
-        showlegend=False
-    ))
-
-    fig_floor.update_layout(
-        plot_bgcolor='#060c18',
-        paper_bgcolor='#060c18',
-        height=420,
-        margin=dict(l=10, r=60, t=10, b=10),
-        xaxis=dict(range=[-0.05, 1.05], showgrid=False, zeroline=False,
-                   showticklabels=False, fixedrange=True),
-        yaxis=dict(range=[-0.05, 1.15], showgrid=False, zeroline=False,
-                   showticklabels=False, fixedrange=True,
-                   scaleanchor="x"),
-        annotations=[
-            dict(x=0.5, y=-0.02, xref="x", yref="y",
-                 text="← 後面", showarrow=False, font=dict(size=9, color="#5a7a9f")),
+        # Box edges: connect the 8 corners
+        # Corners: (x, y, z)  x=左右, y=前後, z=上下
+        corners = {
+            'A': (0,0,1), 'B': (1,0,1),  # front-top: left, right
+            'C': (0,0,0), 'D': (1,0,0),  # front-bot: left, right
+            'E': (0,1,1), 'F': (1,1,1),  # back-top:  left, right
+            'G': (0,1,0), 'H': (1,1,0),  # back-bot:  left, right
+        }
+    # Edges list (pairs of corners)
+        edges = [
+            # front face
+            ('A','B'), ('A','C'), ('B','D'), ('C','D'),
+            # back face
+            ('E','F'), ('E','G'), ('F','H'), ('G','H'),
+            # connecting edges (solid for visible, dashed for hidden)
+            ('A','E'), ('B','F'),  # top edges
+            ('C','G'), ('D','H'),  # bottom edges
         ]
-    )
+        # Hidden edges (dashed): C-G, D-H → typically back-bottom hidden in perspective
+        hidden_edges = {('C','G'), ('D','H'), ('E','G'), ('G','H')}
 
-    # Alarm thresholds annotation
-    if avg_T > alarm_high:
-        fig_floor.add_annotation(
-            x=0.5, y=0.5, text=f"⚠️ 溫度超限！{avg_T:.1f}°C > {alarm_high}°C",
-            showarrow=False, font=dict(size=13, color="#f44336"),
-            bgcolor="rgba(50,0,0,0.7)", bordercolor="#f44336", borderwidth=1,
-            xref="x", yref="y"
+        def add_edge(p1, p2, dashed=False):
+            x0,y0,z0 = corners[p1]
+            x1,y1,z1 = corners[p2]
+            fig_floor.add_trace(go.Scatter3d(
+                x=[x0,x1,None], y=[y0,y1,None], z=[z0,z1,None],
+                mode='lines',
+                line=dict(
+                    color='rgba(100,160,220,0.6)' if not dashed else 'rgba(60,100,160,0.4)',
+                    width=3 if not dashed else 2,
+                    dash='dash' if dashed else 'solid'
+                ),
+                showlegend=False, hoverinfo='skip'
+            ))
+
+        for p1, p2 in edges:
+            add_edge(p1, p2, dashed=(p1,p2) in hidden_edges or (p2,p1) in hidden_edges)
+
+        # Sensor nodes
+        vals = [latest[s['col_key']] for s in INSIDE_SENSORS.values()]
+        vmin_t, vmax_t = min(vals) - 1, max(vals) + 1
+
+        xs, ys, zs, colors_3d, sizes_3d, texts, hovers = [], [], [], [], [], [], []
+        for name, s in INSIDE_SENSORS.items():
+            x, y, z = s['pos']
+            val = latest[s['col_key']]
+            ratio = (val - vmin_t) / max(vmax_t - vmin_t, 0.1)
+            # Blue (cold) → Cyan (warmer)
+            r = int(20 + 180 * ratio)
+            g = int(100 + 120 * ratio)
+            b = int(220 + 30 * ratio)
+            xs.append(x); ys.append(y); zs.append(z)
+            colors_3d.append(f'rgb({r},{g},{b})')
+            sizes_3d.append(22)
+            texts.append(f"{val:.1f}°C")
+            hovers.append(f"<b>{name}</b><br>{s['label']}<br>溫度: {val:.2f}°C")
+
+        fig_floor.add_trace(go.Scatter3d(
+            x=xs, y=ys, z=zs,
+            mode='markers+text',
+            marker=dict(
+                size=sizes_3d, color=colors_3d, opacity=0.95,
+                line=dict(color='white', width=1.5),
+                colorscale=[[0,'rgb(20,60,200)'],[0.5,'rgb(50,160,220)'],[1,'rgb(150,220,255)']],
+                cmin=vmin_t, cmax=vmax_t,
+                colorbar=dict(
+                    title=dict(text="°C", font=dict(color='#7ab3d4', size=11)),
+                    tickfont=dict(color='#7ab3d4', size=9),
+                    thickness=10, len=0.5, x=1.0,
+                    bgcolor='rgba(0,0,0,0)',
+                ),
+                showscale=True,
+                color=vals,
+            ),
+            text=texts,
+            textposition='top center',
+            textfont=dict(size=10, color='white', family='Arial Black'),
+            hovertext=hovers,
+            hoverinfo='text',
+            showlegend=False,
+            name='感測器',
+        ))
+
+        # Sensor name labels (offset slightly)
+        ch_names = list(INSIDE_SENSORS.keys())
+        label_offsets = {'CH1':(0.12,0,0.08), 'CH2':(-0.12,0,0.08),
+                         'CH3':(-0.12,0,-0.08), 'CH4':(0.12,0,-0.08),
+                         'CH5':(0.12,0,0.08), 'CH6':(-0.12,0,0.08),
+                         'CH7':(-0.12,0,-0.08), 'CH8':(0.12,0,-0.08)}
+        lx,ly,lz,ltxt = [],[],[],[]
+        for name, s in INSIDE_SENSORS.items():
+            ox,oy,oz = label_offsets.get(name,(0,0,0.1))
+            x,y,z = s['pos']
+            lx.append(x+ox); ly.append(y+oy); lz.append(z+oz)
+            ltxt.append(name)
+        fig_floor.add_trace(go.Scatter3d(
+            x=lx, y=ly, z=lz, mode='text',
+            text=ltxt,
+            textfont=dict(size=9, color='#7ab3d4'),
+            showlegend=False, hoverinfo='skip'
+        ))
+
+        # Face labels (前面/後面)
+        fig_floor.add_trace(go.Scatter3d(
+            x=[0.5, 0.5], y=[-0.15, 1.15], z=[0.5, 0.5],
+            mode='text',
+            text=['前面', '後面'],
+            textfont=dict(size=12, color='#f0b030'),
+            showlegend=False, hoverinfo='skip'
+        ))
+
+        # Alarm warning text in 3D
+        alarm_text = ''
+        if avg_T > alarm_high:
+            alarm_text = f'⚠️ 超限 {avg_T:.1f}°C'
+
+        fig_floor.update_layout(
+            scene=dict(
+                xaxis=dict(showticklabels=False, showgrid=False, zeroline=False,
+                           backgroundcolor='rgba(0,0,0,0)', title='',
+                           showspikes=False),
+                yaxis=dict(showticklabels=False, showgrid=False, zeroline=False,
+                           backgroundcolor='rgba(0,0,0,0)', title='',
+                           showspikes=False),
+                zaxis=dict(showticklabels=False, showgrid=False, zeroline=False,
+                           backgroundcolor='rgba(0,0,0,0)', title='',
+                           showspikes=False),
+                bgcolor='rgba(6,12,24,1)',
+                camera=dict(
+                    eye=dict(x=-1.6, y=-1.8, z=1.2),   # 仿 PPTX 視角
+                    up=dict(x=0, y=0, z=1),
+                ),
+                aspectmode='cube',
+            ),
+            paper_bgcolor='#060c18',
+            height=420,
+            margin=dict(l=0, r=60, t=10, b=0),
         )
 
-    st.plotly_chart(fig_floor, use_container_width=True)
+        st.plotly_chart(fig_floor, use_container_width=True, config={'displayModeBar': False})
 
-    # Outside sensors compact table
-    st.markdown("<div class='section-title'>🌡️ 庫外感測器</div>", unsafe_allow_html=True)
-    outside_data = []
-    for name, s in OUTSIDE_SENSORS.items():
-        val = latest[s['col_key']]
-        outside_data.append({"感測器": s['label'].replace('\n', ' '), "數值": f"{val:.2f} {s['unit']}"})
-    df_out = pd.DataFrame(outside_data)
-    st.dataframe(df_out, hide_index=True, use_container_width=True,
-                 column_config={"感測器": st.column_config.TextColumn(width="medium"),
-                                "數值": st.column_config.TextColumn(width="small")})
+        # Legend for Module 1 layout
+        st.markdown("""
+        <div style='font-size:0.75rem; color:#5a8aaa; text-align:center; margin-top:-10px;'>
+        🖱️ 可拖曳旋轉 3D 視角 &nbsp;｜&nbsp;
+        左欄=左(L) &nbsp; 右欄=右(R) &nbsp; 上列=前面 &nbsp; 下列=後面
+        </div>
+        <table style='width:100%; font-size:0.78rem; color:#7ab3d4;
+               border-collapse:collapse; margin-top:6px; text-align:center;'>
+          <tr style='background:#0d2040;'>
+            <td style='border:1px solid #1e3a5f; padding:3px;'>CH2 前左上</td>
+            <td style='border:1px solid #1e3a5f; padding:3px;'>CH1 前右上</td>
+          </tr>
+          <tr><td style='border:1px solid #1e3a5f; padding:3px;'>CH4 前左下</td>
+              <td style='border:1px solid #1e3a5f; padding:3px;'>CH3 前右下</td></tr>
+          <tr><td style='border:1px solid #1e3a5f; padding:3px;'>CH6 後左上</td>
+              <td style='border:1px solid #1e3a5f; padding:3px;'>CH5 後右上</td></tr>
+          <tr style='background:#0d2040;'>
+            <td style='border:1px solid #1e3a5f; padding:3px;'>CH8 後左下</td>
+            <td style='border:1px solid #1e3a5f; padding:3px;'>CH7 後右下</td>
+          </tr>
+        </table>
+        """, unsafe_allow_html=True)
+
+        if avg_T > alarm_high:
+            st.markdown(f"<div class='alert-box'>🚨 庫內平均溫度超限：{avg_T:.1f}°C > {alarm_high}°C</div>",
+                        unsafe_allow_html=True)
+
+    # ── Module 2 Tab ──
+    with mod_tab2:
+        st.markdown("<div class='section-title'>Module 2 — 庫外感測器（冷庫機體外壁）</div>",
+                    unsafe_allow_html=True)
+
+        # Module 2 outside sensor layout
+        # Positions around the outside of the box:
+        # CH104[上T]  → top center: (0.5, 0.5, 1.35)
+        # CH101[右T]  → right side: (1.35, 0.5, 0.5)
+        # CH102[左T]  → left side:  (-0.35, 0.5, 0.5)
+        # CH103[前T]  → front:      (0.5, -0.35, 0.5)
+        # CH106[前T溫溼] → front-low: (0.35, -0.35, 0.3)
+        # CH105[前H溼] → front-low-right: (0.65, -0.35, 0.3)
+
+        out2_sensors = [
+            {'name':'CH104', 'label':'CH104\n上T',   'col':'CH104(通道 104)',         'unit':'°C',
+             'pos':(0.5, 0.5, 1.4),  'color':'#ffa726'},
+            {'name':'CH101', 'label':'CH101\n右T(壓縮機)', 'col':'CH101(一號壓縮機)', 'unit':'°C',
+             'pos':(1.4, 0.5, 0.5),  'color':'#ef5350'},
+            {'name':'CH102', 'label':'CH102\n左T',   'col':'CH102(通道 102)',         'unit':'°C',
+             'pos':(-0.4, 0.5, 0.5), 'color':'#42a5f5'},
+            {'name':'CH103', 'label':'CH103\n前T',   'col':'CH103(通道 103)',         'unit':'°C',
+             'pos':(0.5, -0.4, 0.7), 'color':'#66bb6a'},
+            {'name':'CH106', 'label':'CH106\n前T\n(溫溼度計)', 'col':'CH106(關鍵數據 (CH106))', 'unit':'°C',
+             'pos':(0.3, -0.4, 0.3), 'color':'#ab47bc'},
+            {'name':'CH105', 'label':'CH105\n前H\n(溫溼度計)', 'col':'CH105(通道 105)', 'unit':'%RH',
+             'pos':(0.7, -0.4, 0.3), 'color':'#26c6da'},
+        ]
+
+        fig_out3d = go.Figure()
+
+        # Draw the cold storage box (semi-transparent)
+        corners2 = {
+            'A':(0,0,1),'B':(1,0,1),'C':(0,0,0),'D':(1,0,0),
+            'E':(0,1,1),'F':(1,1,1),'G':(0,1,0),'H':(1,1,0),
+        }
+        edges2 = [('A','B'),('A','C'),('B','D'),('C','D'),
+                  ('E','F'),('F','H'),('B','F'),('D','H'),
+                  ('A','E'),('E','G'),('G','H'),('C','G')]
+        for p1,p2 in edges2:
+            x0,y0,z0 = corners2[p1]; x1,y1,z1 = corners2[p2]
+            fig_out3d.add_trace(go.Scatter3d(
+                x=[x0,x1,None], y=[y0,y1,None], z=[z0,z1,None],
+                mode='lines',
+                line=dict(color='rgba(100,160,220,0.35)', width=2),
+                showlegend=False, hoverinfo='skip'
+            ))
+        # Semi-transparent box fill (front face hint)
+        fig_out3d.add_trace(go.Mesh3d(
+            x=[0,1,1,0], y=[0,0,0,0], z=[0,0,1,1],
+            color='rgba(30,80,160,0.08)', opacity=0.08,
+            showlegend=False, hoverinfo='skip'
+        ))
+
+        # Outside sensor nodes
+        for s in out2_sensors:
+            val = latest[s['col']]
+            sz  = 18 if s['unit'] == '°C' else 20
+            x,y,z = s['pos']
+            label_short = s['name']
+            val_str = f"{val:.1f}{s['unit']}"
+            fig_out3d.add_trace(go.Scatter3d(
+                x=[x], y=[y], z=[z],
+                mode='markers+text',
+                marker=dict(size=sz, color=s['color'], opacity=0.92,
+                            symbol='circle',
+                            line=dict(color='white', width=1.5)),
+                text=[val_str],
+                textposition='top center',
+                textfont=dict(size=10, color='white', family='Arial Black'),
+                name=s['name'],
+                hovertemplate=f"<b>{s['name']}</b><br>{s['label'].replace(chr(10),' ')}<br>{val:.2f} {s['unit']}<extra></extra>",
+                showlegend=True,
+            ))
+            # Line from sensor to box surface (connector)
+            # Find nearest box face point
+            bx = max(0, min(1, x)); by = max(0, min(1, y)); bz = max(0, min(1, z))
+            fig_out3d.add_trace(go.Scatter3d(
+                x=[x, bx, None], y=[y, by, None], z=[z, bz, None],
+                mode='lines',
+                line=dict(color=s['color'], width=1.5, dash='dot'),
+                showlegend=False, hoverinfo='skip'
+            ))
+
+        # Labels
+        fig_out3d.add_trace(go.Scatter3d(
+            x=[0.5, 0.5], y=[-0.15, 1.15], z=[0.5, 0.5],
+            mode='text', text=['前面', '後面'],
+            textfont=dict(size=11, color='#f0b030'),
+            showlegend=False, hoverinfo='skip'
+        ))
+
+        fig_out3d.update_layout(
+            scene=dict(
+                xaxis=dict(showticklabels=False, showgrid=False, zeroline=False,
+                           backgroundcolor='rgba(0,0,0,0)', title='', showspikes=False,
+                           range=[-0.6, 1.6]),
+                yaxis=dict(showticklabels=False, showgrid=False, zeroline=False,
+                           backgroundcolor='rgba(0,0,0,0)', title='', showspikes=False,
+                           range=[-0.6, 1.6]),
+                zaxis=dict(showticklabels=False, showgrid=False, zeroline=False,
+                           backgroundcolor='rgba(0,0,0,0)', title='', showspikes=False,
+                           range=[-0.2, 1.6]),
+                bgcolor='rgba(6,12,24,1)',
+                camera=dict(eye=dict(x=-1.8, y=-1.8, z=1.2), up=dict(x=0,y=0,z=1)),
+                aspectmode='cube',
+            ),
+            legend=dict(orientation="h", y=-0.05, font=dict(size=9, color="#7ab3d4"),
+                        bgcolor="rgba(0,0,0,0)"),
+            paper_bgcolor='#060c18',
+            height=380,
+            margin=dict(l=0, r=10, t=5, b=0),
+        )
+        st.plotly_chart(fig_out3d, use_container_width=True, config={'displayModeBar': False})
+
+        # Module 2 value cards
+        cols_m2 = st.columns(2)
+        for i, s in enumerate(out2_sensors):
+            val = latest[s['col']]
+            cols_m2[i % 2].markdown(f"""
+            <div class='kpi-card' style='margin-bottom:4px; padding:8px 10px;'>
+                <div class='kpi-label' style='color:{s["color"]};'>{s['name']}</div>
+                <div style='font-size:1.3rem; font-weight:700; color:{s["color"]};'>{val:.1f}</div>
+                <div class='kpi-unit'>{s['unit']}</div>
+            </div>
+            """, unsafe_allow_html=True)
 
 # ── RIGHT: Time Series Chart ──
 with col_right:
@@ -430,7 +640,7 @@ with col_right:
             for i, (name, s) in enumerate(INSIDE_SENSORS.items()):
                 fig_inside.add_trace(go.Scatter(
                     x=dff['時間'], y=dff[s['col_key']],
-                    name=f"{name}({s['label'].split(chr(10))[1]})",
+                    name=f"{name}({s['label'].split(' ')[1]})",
                     line=dict(width=1.5, color=colors_inside[i % len(colors_inside)]),
                     opacity=0.85,
                     hovertemplate=f"{name}: %{{y:.2f}}°C<extra></extra>"
@@ -561,7 +771,7 @@ with col_hm:
     step = max(1, len(dff) // 300)
     df_hm = dff.iloc[::step]
     z_data = df_hm[[s['col_key'] for s in INSIDE_SENSORS.values()]].T.values
-    ch_labels = [f"{n}({s['label'].split(chr(10))[1]})" for n, s in INSIDE_SENSORS.items()]
+    ch_labels = [f"{n} ({s['label'].split(' ')[1]})" for n, s in INSIDE_SENSORS.items()]
     fig_hm = go.Figure(go.Heatmap(
         z=z_data,
         x=df_hm['時間'].dt.strftime('%H:%M'),
@@ -639,9 +849,9 @@ with st.expander("📋 查看原始資料表"):
     display_cols = ['時間'] + [s['col_key'] for s in INSIDE_SENSORS.values()] + \
                   [s['col_key'] for s in OUTSIDE_SENSORS.values()]
     rename_map = {'時間': '時間'}
-    rename_map.update({s['col_key']: f"{n}({s['label'].split(chr(10))[1]})"
+    rename_map.update({s['col_key']: f"{n} {s['label'].split(' ')[1]}"
                        for n, s in INSIDE_SENSORS.items()})
-    rename_map.update({s['col_key']: s['label'].replace('\n', ' ')
+    rename_map.update({s['col_key']: s['label']
                        for s in OUTSIDE_SENSORS.values()})
     df_show = dff[display_cols].rename(columns=rename_map).tail(200)
     st.dataframe(df_show, hide_index=True, use_container_width=True, height=300)
