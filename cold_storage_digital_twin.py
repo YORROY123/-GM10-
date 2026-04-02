@@ -392,7 +392,7 @@ with col_left:
             x=xs, y=ys, z=zs,
             mode='markers+text',
             marker=dict(
-                size=sizes_3d, color=colors_3d, opacity=0.95,
+                size=sizes_3d, opacity=0.95,
                 line=dict(color='white', width=1.5),
                 colorscale=[[0,'rgb(20,60,200)'],[0.5,'rgb(50,160,220)'],[1,'rgb(150,220,255)']],
                 cmin=vmin_t, cmax=vmax_t,
