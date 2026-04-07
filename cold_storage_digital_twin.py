@@ -99,17 +99,15 @@ st.markdown("""
 # Based on PPTX diagram: 8 corners of the cold storage box
 INSIDE_SENSORS = {
     # x:0=左,1=右 | y:0=前,1=後 | z:0=下,1=上
-    # 使用者確認:
-    # CH1=後右上, CH2=前右上, CH3=前左上, CH4=後左上
-    # CH5=後右下, CH6=前右下, CH7=前左下, CH8=後左下
-    'CH1': {'label': 'CH1 後右上', 'col_key': 'CH1(測試通道_01)', 'pos': (1, 1, 1)},
-    'CH2': {'label': 'CH2 前右上', 'col_key': 'CH2(測試通道_02)', 'pos': (1, 0, 1)},
-    'CH3': {'label': 'CH3 前左上', 'col_key': 'CH3(通道 3)',      'pos': (0, 0, 1)},
-    'CH4': {'label': 'CH4 後左上', 'col_key': 'CH4(通道 4)',      'pos': (0, 1, 1)},
-    'CH5': {'label': 'CH5 後右下', 'col_key': 'CH5(通道 5)',      'pos': (1, 1, 0)},
-    'CH6': {'label': 'CH6 前右下', 'col_key': 'CH6(通道 6)',      'pos': (1, 0, 0)},
-    'CH7': {'label': 'CH7 前左下', 'col_key': 'CH7(通道 7)',      'pos': (0, 0, 0)},
-    'CH8': {'label': 'CH8 後左下', 'col_key': 'CH8(通道 8)',      'pos': (0, 1, 0)},
+    # CH1↔CH4互調, CH2↔CH3互調, CH5↔CH8互調, CH6↔CH7互調
+    'CH1': {'label': 'CH1 後左上', 'col_key': 'CH1(測試通道_01)', 'pos': (0, 1, 1)},
+    'CH2': {'label': 'CH2 前左上', 'col_key': 'CH2(測試通道_02)', 'pos': (0, 0, 1)},
+    'CH3': {'label': 'CH3 前右上', 'col_key': 'CH3(通道 3)',      'pos': (1, 0, 1)},
+    'CH4': {'label': 'CH4 後右上', 'col_key': 'CH4(通道 4)',      'pos': (1, 1, 1)},
+    'CH5': {'label': 'CH5 後左下', 'col_key': 'CH5(通道 5)',      'pos': (0, 1, 0)},
+    'CH6': {'label': 'CH6 前左下', 'col_key': 'CH6(通道 6)',      'pos': (0, 0, 0)},
+    'CH7': {'label': 'CH7 前右下', 'col_key': 'CH7(通道 7)',      'pos': (1, 0, 0)},
+    'CH8': {'label': 'CH8 後右下', 'col_key': 'CH8(通道 8)',      'pos': (1, 1, 0)},
 }
 
 OUTSIDE_SENSORS = {
@@ -398,7 +396,7 @@ with col_left:
             marker=dict(
                 size=sizes_3d, opacity=0.95,
                 line=dict(color='white', width=1.5),
-                colorscale=[[0,'rgb(20,60,200)'],[0.5,'rgb(50,160,220)'],[1,'rgb(150,220,255)']],
+                colorscale=[[0,'#2196f3'],[0.5,'#4caf50'],[1,'#f44336']],
                 cmin=vmin_t, cmax=vmax_t,
                 colorbar=dict(
                     title=dict(text="°C", font=dict(color='#1565c0', size=11)),
@@ -519,22 +517,22 @@ with col_left:
         out2_sensors = [
             {'name':'CH104', 'label':'CH104\n上T',
              'col':'CH104(通道 104)',         'unit':'°C',
-             'pos':(0.5, 0.5, 1.42), 'color':'#ffa726'},
+             'pos':(0.5, 0.5, 1.42), 'color':'#ff9800'},
             {'name':'CH101', 'label':'CH101\n右T(壓縮機)',
              'col':'CH101(一號壓縮機)', 'unit':'°C',
-             'pos':(-0.42, 0.8, 0.15), 'color':'#ef5350'},
+             'pos':(-0.42, 0.8, 0.15), 'color':'#e63946'},
             {'name':'CH102', 'label':'CH102\n左T',
              'col':'CH102(通道 102)', 'unit':'°C',
-             'pos':(1.42, 0.3, 0.55), 'color':'#42a5f5'},
+             'pos':(1.42, 0.3, 0.55), 'color':'#2196f3'},
             {'name':'CH103', 'label':'CH103\n前T',
              'col':'CH103(通道 103)', 'unit':'°C',
-             'pos':(0.55, -0.42, 0.65), 'color':'#66bb6a'},
+             'pos':(0.55, -0.42, 0.65), 'color':'#4caf50'},
             {'name':'CH106', 'label':'CH106\n前T(溫溼度計)',
              'col':'CH106(關鍵數據 (CH106))', 'unit':'°C',
-             'pos':(0.2, -0.42, 0.38), 'color':'#ab47bc'},
+             'pos':(0.2, -0.42, 0.38), 'color':'#9c27b0'},
             {'name':'CH105', 'label':'CH105\n前H(溫溼度計)',
              'col':'CH105(通道 105)', 'unit':'%RH',
-             'pos':(0.2, -0.42, 0.18), 'color':'#26c6da'},
+             'pos':(0.2, -0.42, 0.18), 'color':'#00bcd4'},
         ]
 
         fig_out3d = go.Figure()
@@ -651,8 +649,16 @@ with col_right:
         )
         overlay = "疊圖" in overlay_mode
 
-        colors_inside = ['#ef5350','#ffa726','#ffee58','#66bb6a',
-                         '#42a5f5','#ab47bc','#26c6da','#ff7043']
+        colors_inside = [
+            '#e63946',  # CH1 深紅
+            '#2196f3',  # CH2 藍
+            '#ff9800',  # CH3 橘
+            '#4caf50',  # CH4 綠
+            '#9c27b0',  # CH5 紫
+            '#00bcd4',  # CH6 青
+            '#795548',  # CH7 棕
+            '#607d8b',  # CH8 藍灰
+        ]
         ch_list = list(INSIDE_SENSORS.items())
 
         if overlay:
@@ -931,6 +937,5 @@ st.markdown("---")
 st.markdown("""
 <div style='text-align:center; color:#3a5a7a; font-size:0.78rem;'>
     ❄️ 商錄冷庫 GM10 數位雙生系統 ｜ ITRI 綠能所 智慧控制設備研究室 ｜ GB+44015-2026<br>
-    技術支援: 熱流 + IoT + AI + Firmware 整合平台
 </div>
 """, unsafe_allow_html=True)
