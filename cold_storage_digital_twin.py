@@ -366,8 +366,8 @@ with col_left:
                 x=[x0,x1,None], y=[y0,y1,None], z=[z0,z1,None],
                 mode='lines',
                 line=dict(
-                    color='rgba(30,80,160,0.7)' if not dashed else 'rgba(30,80,160,0.3)',
-                    width=3 if not dashed else 2,
+                    color='#1a237e' if not dashed else 'rgba(26,35,126,0.4)',
+                    width=4 if not dashed else 2,
                     dash='dash' if dashed else 'solid'
                 ),
                 showlegend=False, hoverinfo='skip'
@@ -414,7 +414,7 @@ with col_left:
             ),
             text=texts,
             textposition='top center',
-            textfont=dict(size=10, color='white', family='Arial Black'),
+            textfont=dict(size=10, color='#1a237e', family='Arial Black'),
             hovertext=hovers,
             hoverinfo='text',
             showlegend=False,
@@ -519,8 +519,12 @@ with col_left:
 
     # ── Module 2 Tab ──
     with mod_tab2:
-        st.markdown("<div class='section-title'>Module 2 — 庫外感測器（冷庫機體外壁）</div>",
-                    unsafe_allow_html=True)
+        st.markdown(
+            "<div class='section-title'>Module 2 — 庫外感測器（冷庫機體外壁）"
+            f"<span style='font-weight:400; color:#555; font-size:0.8rem; margin-left:12px;'>"
+            f"📍 各點顯示為<b style='color:#e63946'>即時值</b>（非平均）&nbsp;｜&nbsp;"
+            f"⏱ 最新資料：<b style='color:#1565c0'>{latest_time}</b></span></div>",
+            unsafe_allow_html=True)
 
         # Module 2 outside sensor layout (對照 PPTX Module2 圖):
         # CH104[上T]  → 頂部中央
@@ -591,7 +595,7 @@ with col_left:
                             line=dict(color='white', width=1.5)),
                 text=[val_str],
                 textposition='top center',
-                textfont=dict(size=10, color='white', family='Arial Black'),
+                textfont=dict(size=10, color='#1a237e', family='Arial Black'),
                 name=s['name'],
                 hovertemplate=f"<b>{s['name']}</b><br>{s['label'].replace(chr(10),' ')}<br>{val:.2f} {s['unit']}<extra></extra>",
                 showlegend=True,
@@ -917,13 +921,13 @@ with col_alert:
     st.markdown(f"""
     <div class='kpi-card' style='text-align:left;'>
         <div class='kpi-label'>選取區間統計</div>
-        <div style='font-size:0.82rem; color:#e0e8f0; line-height:1.8;'>
-        📊 點數: {len(dff):,}<br>
-        🌡️ 平均: {dff['avg_inside_T'].mean():.2f}°C<br>
-        🔺 最高: {dff['max_inside_T'].max():.2f}°C<br>
-        🔻 最低: {dff['min_inside_T'].min():.2f}°C<br>
-        📐 平均σ: {dff['uniformity'].mean():.3f}°C<br>
-        💧 平均濕度: {dff['CH105(通道 105)'].mean():.1f}%RH
+        <div style='font-size:0.82rem; color:#1a2a45; line-height:2.0;'>
+        📊 點數: <b>{len(dff):,}</b><br>
+        🌡️ 區間平均溫: <b>{dff['avg_inside_T'].mean():.2f}°C</b><br>
+        🔺 區間最高溫: <b>{dff['max_inside_T'].max():.2f}°C</b><br>
+        🔻 區間最低溫: <b>{dff['min_inside_T'].min():.2f}°C</b><br>
+        📐 平均均勻度σ: <b>{dff['uniformity'].mean():.3f}°C</b><br>
+        💧 區間平均濕度: <b>{dff['CH105(通道 105)'].mean():.1f}%RH</b>
         </div>
     </div>
     """, unsafe_allow_html=True)
