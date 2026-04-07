@@ -317,9 +317,9 @@ col_left, col_right = st.columns([1, 2])
 # ── LEFT: Module 1 (庫內) + Module 2 (庫外) ──
 with col_left:
     st.markdown("""
-    <div style='background:linear-gradient(90deg,#0d2040,#0a1a30);
-         border:1px solid #1e5f9f; border-radius:8px; padding:8px 14px; margin-bottom:8px;
-         font-size:0.82rem; color:#7ab3d4; text-align:center;'>
+    <div style='background:linear-gradient(90deg,#1565c0,#1976d2);
+         border:1px solid #90caf9; border-radius:8px; padding:8px 14px; margin-bottom:8px;
+         font-size:0.82rem; color:#fff; text-align:center;'>
         🔬 <b style='color:#4fc3f7'>GM10 儀器</b> &nbsp;|&nbsp;
         <span style='color:#42a5f5'>Module 1 庫內</span> (CH1-CH8) &nbsp;+&nbsp;
         <span style='color:#ffa726'>Module 2 庫外</span> (CH101-CH106)
@@ -329,8 +329,13 @@ with col_left:
     mod_tab1, mod_tab2 = st.tabs(["❄️ Module 1 庫內 3D", "🌡️ Module 2 庫外"])
 
     with mod_tab1:
-        st.markdown("<div class='section-title'>Module 1 — 庫內 8點溫度分布（2×4 量測點）</div>",
-                    unsafe_allow_html=True)
+        latest_time = dff['時間'].iloc[-1].strftime('%H:%M:%S')
+        st.markdown(
+            f"<div class='section-title'>Module 1 — 庫內 8點溫度分布（2×4 量測點）"
+            f"<span style='font-weight:400; color:#555; font-size:0.8rem; margin-left:12px;'>"
+            f"📍 各點顯示為<b style='color:#e63946'>即時值</b>（非平均）&nbsp;｜&nbsp;"
+            f"⏱ 最新資料：<b style='color:#1565c0'>{latest_time}</b></span></div>",
+            unsafe_allow_html=True)
         fig_floor = go.Figure()
 
         # Box edges: connect the 8 corners
@@ -440,7 +445,7 @@ with col_left:
             x=[0.5, 0.5], y=[-0.15, 1.15], z=[0.5, 0.5],
             mode='text',
             text=['前面', '後面'],
-            textfont=dict(size=12, color='#f0b030'),
+            textfont=dict(size=12, color='#e65100'),
             showlegend=False, hoverinfo='skip'
         ))
 
@@ -476,24 +481,35 @@ with col_left:
 
         # Legend for Module 1 layout
         st.markdown("""
-        <div style='font-size:0.75rem; color:#5a8aaa; text-align:center; margin-top:-10px;'>
-        🖱️ 可拖曳旋轉 3D 視角 &nbsp;｜&nbsp;
-        左欄=左(L) &nbsp; 右欄=右(R) &nbsp; 上列=前面 &nbsp; 下列=後面
+        <div style='font-size:0.78rem; color:#444; text-align:center; margin-top:-8px; margin-bottom:4px;'>
+        🖱️ 可拖曳旋轉 3D 視角 &nbsp;｜&nbsp; 左欄=左 右欄=右 &nbsp;｜&nbsp; 上列=前面 下列=後面
         </div>
-        <table style='width:100%; font-size:0.78rem; color:#7ab3d4;
-               border-collapse:collapse; margin-top:6px; text-align:center;'>
-          <tr style='background:#0d2040;'>
-            <td style='border:1px solid #1e3a5f; padding:3px;'>CH2 前左上</td>
-            <td style='border:1px solid #1e3a5f; padding:3px;'>CH1 前右上</td>
-          </tr>
-          <tr><td style='border:1px solid #1e3a5f; padding:3px;'>CH4 前左下</td>
-              <td style='border:1px solid #1e3a5f; padding:3px;'>CH3 前右下</td></tr>
-          <tr><td style='border:1px solid #1e3a5f; padding:3px;'>CH6 後左上</td>
-              <td style='border:1px solid #1e3a5f; padding:3px;'>CH5 後右上</td></tr>
-          <tr style='background:#0d2040;'>
-            <td style='border:1px solid #1e3a5f; padding:3px;'>CH8 後左下</td>
-            <td style='border:1px solid #1e3a5f; padding:3px;'>CH7 後右下</td>
-          </tr>
+        <table style='width:100%; font-size:0.8rem; border-collapse:collapse;
+               text-align:center; margin-bottom:8px;'>
+          <thead>
+            <tr style='background:#1565c0; color:#fff;'>
+              <th style='border:1px solid #90caf9; padding:5px;'>左側</th>
+              <th style='border:1px solid #90caf9; padding:5px;'>右側</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr style='background:#e3f2fd;'>
+              <td style='border:1px solid #90caf9; padding:4px; color:#1a237e; font-weight:600;'>CH2 前左上</td>
+              <td style='border:1px solid #90caf9; padding:4px; color:#b71c1c; font-weight:600;'>CH3 前右上</td>
+            </tr>
+            <tr style='background:#fff;'>
+              <td style='border:1px solid #90caf9; padding:4px; color:#1565c0;'>CH1 後左上</td>
+              <td style='border:1px solid #90caf9; padding:4px; color:#e65100;'>CH4 後右上</td>
+            </tr>
+            <tr style='background:#e3f2fd;'>
+              <td style='border:1px solid #90caf9; padding:4px; color:#4a148c;'>CH6 前左下</td>
+              <td style='border:1px solid #90caf9; padding:4px; color:#006064;'>CH7 前右下</td>
+            </tr>
+            <tr style='background:#fff;'>
+              <td style='border:1px solid #90caf9; padding:4px; color:#37474f;'>CH5 後左下</td>
+              <td style='border:1px solid #90caf9; padding:4px; color:#37474f;'>CH8 後右下</td>
+            </tr>
+          </tbody>
         </table>
         """, unsafe_allow_html=True)
 
@@ -594,7 +610,7 @@ with col_left:
         fig_out3d.add_trace(go.Scatter3d(
             x=[0.5, 0.5], y=[-0.15, 1.15], z=[0.5, 0.5],
             mode='text', text=['前面', '後面'],
-            textfont=dict(size=11, color='#f0b030'),
+            textfont=dict(size=11, color='#e65100'),
             showlegend=False, hoverinfo='skip'
         ))
 
@@ -937,5 +953,6 @@ st.markdown("---")
 st.markdown("""
 <div style='text-align:center; color:#3a5a7a; font-size:0.78rem;'>
     ❄️ 商錄冷庫 GM10 數位雙生系統 ｜ ITRI 綠能所 智慧控制設備研究室 ｜ GB+44015-2026<br>
+    技術支援: 熱流 + IoT + AI + Firmware 整合平台
 </div>
 """, unsafe_allow_html=True)
