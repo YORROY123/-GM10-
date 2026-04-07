@@ -28,66 +28,66 @@ st.set_page_config(
 # ─────────────────────────────────────────────
 st.markdown("""
 <style>
-    /* Dark theme base */
-    .stApp { background-color: #0a0e1a; color: #e0e8f0; }
+    /* Light theme base */
+    .stApp { background-color: #f5f7fa; color: #1a2a45; }
     .main .block-container { padding: 1rem 2rem; }
 
     /* KPI Cards */
     .kpi-card {
-        background: linear-gradient(135deg, #0d1b2e 0%, #1a2a45 100%);
-        border: 1px solid #1e3a5f;
+        background: linear-gradient(135deg, #ffffff 0%, #eaf2fb 100%);
+        border: 1px solid #b3d1ec;
         border-radius: 12px;
         padding: 16px 20px;
         text-align: center;
-        box-shadow: 0 4px 15px rgba(0,100,200,0.15);
+        box-shadow: 0 2px 10px rgba(0,100,200,0.10);
     }
-    .kpi-label { font-size: 0.75rem; color: #7ab3d4; letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 4px; }
+    .kpi-label { font-size: 0.75rem; color: #2a6496; letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 4px; }
     .kpi-value { font-size: 2rem; font-weight: 700; line-height: 1.1; }
-    .kpi-unit  { font-size: 0.85rem; color: #7ab3d4; }
+    .kpi-unit  { font-size: 0.85rem; color: #2a6496; }
     .kpi-delta { font-size: 0.78rem; margin-top: 4px; }
 
     /* Section headers */
     .section-title {
         font-size: 0.9rem;
         font-weight: 600;
-        color: #4fc3f7;
+        color: #1565c0;
         text-transform: uppercase;
         letter-spacing: 0.1em;
         margin: 12px 0 8px 0;
         padding-bottom: 4px;
-        border-bottom: 1px solid #1e3a5f;
+        border-bottom: 2px solid #90caf9;
     }
 
     /* Status badge */
-    .badge-ok   { background:#0d3d2a; color:#4caf50; border:1px solid #4caf50; border-radius:6px; padding:2px 10px; font-size:0.78rem; }
-    .badge-warn { background:#3d2d00; color:#ffb300; border:1px solid #ffb300; border-radius:6px; padding:2px 10px; font-size:0.78rem; }
-    .badge-err  { background:#3d0d0d; color:#f44336; border:1px solid #f44336; border-radius:6px; padding:2px 10px; font-size:0.78rem; }
+    .badge-ok   { background:#e8f5e9; color:#2e7d32; border:1px solid #4caf50; border-radius:6px; padding:2px 10px; font-size:0.78rem; }
+    .badge-warn { background:#fff8e1; color:#f57f17; border:1px solid #ffb300; border-radius:6px; padding:2px 10px; font-size:0.78rem; }
+    .badge-err  { background:#ffebee; color:#c62828; border:1px solid #f44336; border-radius:6px; padding:2px 10px; font-size:0.78rem; }
 
     /* Sidebar */
-    section[data-testid="stSidebar"] { background: #060c18; border-right: 1px solid #1e3a5f; }
-    section[data-testid="stSidebar"] .stMarkdown h2 { color: #4fc3f7; }
+    section[data-testid="stSidebar"] { background: #e8f0fb; border-right: 1px solid #b3d1ec; }
+    section[data-testid="stSidebar"] .stMarkdown h2 { color: #1565c0; }
 
     /* Plotly chart backgrounds */
-    .js-plotly-plot { border-radius: 10px; }
+    .js-plotly-plot { border-radius: 10px; border: 1px solid #d0e4f7; }
 
     /* Alert box */
     .alert-box {
-        background: #1a0a0a;
+        background: #ffebee;
         border-left: 4px solid #f44336;
         border-radius: 4px;
         padding: 8px 12px;
         margin: 4px 0;
         font-size: 0.82rem;
-        color: #ff7961;
+        color: #c62828;
     }
     .warn-box {
-        background: #1a1200;
+        background: #fff8e1;
         border-left: 4px solid #ffb300;
         border-radius: 4px;
         padding: 8px 12px;
         margin: 4px 0;
         font-size: 0.82rem;
-        color: #ffe082;
+        color: #f57f17;
     }
 </style>
 """, unsafe_allow_html=True)
@@ -99,16 +99,17 @@ st.markdown("""
 # Based on PPTX diagram: 8 corners of the cold storage box
 INSIDE_SENSORS = {
     # x:0=左,1=右 | y:0=前,1=後 | z:0=下,1=上
-    # 前面: CH1(右上) CH2(左上) CH7(左下) CH8(右下)
-    # 後面: CH3(左上) CH4(右上) CH5(右下) CH6(左下)
-    'CH1': {'label': 'CH1 前右上', 'col_key': 'CH1(測試通道_01)', 'pos': (1, 0, 1)},
-    'CH2': {'label': 'CH2 前左上', 'col_key': 'CH2(測試通道_02)', 'pos': (0, 0, 1)},
-    'CH3': {'label': 'CH3 後左上', 'col_key': 'CH3(通道 3)',      'pos': (0, 1, 1)},
-    'CH4': {'label': 'CH4 後右上', 'col_key': 'CH4(通道 4)',      'pos': (1, 1, 1)},
+    # 使用者確認:
+    # CH1=後右上, CH2=前右上, CH3=前左上, CH4=後左上
+    # CH5=後右下, CH6=前右下, CH7=前左下, CH8=後左下
+    'CH1': {'label': 'CH1 後右上', 'col_key': 'CH1(測試通道_01)', 'pos': (1, 1, 1)},
+    'CH2': {'label': 'CH2 前右上', 'col_key': 'CH2(測試通道_02)', 'pos': (1, 0, 1)},
+    'CH3': {'label': 'CH3 前左上', 'col_key': 'CH3(通道 3)',      'pos': (0, 0, 1)},
+    'CH4': {'label': 'CH4 後左上', 'col_key': 'CH4(通道 4)',      'pos': (0, 1, 1)},
     'CH5': {'label': 'CH5 後右下', 'col_key': 'CH5(通道 5)',      'pos': (1, 1, 0)},
-    'CH6': {'label': 'CH6 後左下', 'col_key': 'CH6(通道 6)',      'pos': (0, 1, 0)},
+    'CH6': {'label': 'CH6 前右下', 'col_key': 'CH6(通道 6)',      'pos': (1, 0, 0)},
     'CH7': {'label': 'CH7 前左下', 'col_key': 'CH7(通道 7)',      'pos': (0, 0, 0)},
-    'CH8': {'label': 'CH8 前右下', 'col_key': 'CH8(通道 8)',      'pos': (1, 0, 0)},
+    'CH8': {'label': 'CH8 後左下', 'col_key': 'CH8(通道 8)',      'pos': (0, 1, 0)},
 }
 
 OUTSIDE_SENSORS = {
@@ -362,7 +363,7 @@ with col_left:
                 x=[x0,x1,None], y=[y0,y1,None], z=[z0,z1,None],
                 mode='lines',
                 line=dict(
-                    color='rgba(100,160,220,0.6)' if not dashed else 'rgba(60,100,160,0.4)',
+                    color='rgba(30,80,160,0.7)' if not dashed else 'rgba(30,80,160,0.3)',
                     width=3 if not dashed else 2,
                     dash='dash' if dashed else 'solid'
                 ),
@@ -400,10 +401,10 @@ with col_left:
                 colorscale=[[0,'rgb(20,60,200)'],[0.5,'rgb(50,160,220)'],[1,'rgb(150,220,255)']],
                 cmin=vmin_t, cmax=vmax_t,
                 colorbar=dict(
-                    title=dict(text="°C", font=dict(color='#7ab3d4', size=11)),
-                    tickfont=dict(color='#7ab3d4', size=9),
+                    title=dict(text="°C", font=dict(color='#1565c0', size=11)),
+                    tickfont=dict(color='#1a2a45', size=9),
                     thickness=10, len=0.5, x=1.0,
-                    bgcolor='rgba(0,0,0,0)',
+                    bgcolor='rgba(245,247,250,0)',
                 ),
                 showscale=True,
                 color=vals,
@@ -432,7 +433,7 @@ with col_left:
         fig_floor.add_trace(go.Scatter3d(
             x=lx, y=ly, z=lz, mode='text',
             text=ltxt,
-            textfont=dict(size=9, color='#7ab3d4'),
+            textfont=dict(size=9, color='#1565c0'),
             showlegend=False, hoverinfo='skip'
         ))
 
@@ -453,22 +454,22 @@ with col_left:
         fig_floor.update_layout(
             scene=dict(
                 xaxis=dict(showticklabels=False, showgrid=False, zeroline=False,
-                           backgroundcolor='rgba(0,0,0,0)', title='',
+                           backgroundcolor='rgba(245,247,250,0)', title='',
                            showspikes=False),
                 yaxis=dict(showticklabels=False, showgrid=False, zeroline=False,
-                           backgroundcolor='rgba(0,0,0,0)', title='',
+                           backgroundcolor='rgba(245,247,250,0)', title='',
                            showspikes=False),
                 zaxis=dict(showticklabels=False, showgrid=False, zeroline=False,
-                           backgroundcolor='rgba(0,0,0,0)', title='',
+                           backgroundcolor='rgba(245,247,250,0)', title='',
                            showspikes=False),
-                bgcolor='rgba(6,12,24,1)',
+                bgcolor='rgba(245,247,250,1)',
                 camera=dict(
                     eye=dict(x=-1.6, y=-1.8, z=1.2),   # 仿 PPTX 視角
                     up=dict(x=0, y=0, z=1),
                 ),
                 aspectmode='cube',
             ),
-            paper_bgcolor='#060c18',
+            paper_bgcolor='#f5f7fa',
             height=420,
             margin=dict(l=0, r=60, t=10, b=0),
         )
@@ -521,10 +522,10 @@ with col_left:
              'pos':(0.5, 0.5, 1.42), 'color':'#ffa726'},
             {'name':'CH101', 'label':'CH101\n右T(壓縮機)',
              'col':'CH101(一號壓縮機)', 'unit':'°C',
-             'pos':(1.42, 0.3, 0.55), 'color':'#ef5350'},
+             'pos':(-0.42, 0.8, 0.15), 'color':'#ef5350'},
             {'name':'CH102', 'label':'CH102\n左T',
              'col':'CH102(通道 102)', 'unit':'°C',
-             'pos':(-0.42, 0.8, 0.15), 'color':'#42a5f5'},
+             'pos':(1.42, 0.3, 0.55), 'color':'#42a5f5'},
             {'name':'CH103', 'label':'CH103\n前T',
              'col':'CH103(通道 103)', 'unit':'°C',
              'pos':(0.55, -0.42, 0.65), 'color':'#66bb6a'},
@@ -551,7 +552,7 @@ with col_left:
             fig_out3d.add_trace(go.Scatter3d(
                 x=[x0,x1,None], y=[y0,y1,None], z=[z0,z1,None],
                 mode='lines',
-                line=dict(color='rgba(100,160,220,0.35)', width=2),
+                line=dict(color='rgba(30,80,160,0.5)', width=2),
                 showlegend=False, hoverinfo='skip'
             ))
         # Semi-transparent box fill (front face hint)
@@ -602,21 +603,21 @@ with col_left:
         fig_out3d.update_layout(
             scene=dict(
                 xaxis=dict(showticklabels=False, showgrid=False, zeroline=False,
-                           backgroundcolor='rgba(0,0,0,0)', title='', showspikes=False,
+                           backgroundcolor='rgba(245,247,250,0)', title='', showspikes=False,
                            range=[-0.6, 1.6]),
                 yaxis=dict(showticklabels=False, showgrid=False, zeroline=False,
-                           backgroundcolor='rgba(0,0,0,0)', title='', showspikes=False,
+                           backgroundcolor='rgba(245,247,250,0)', title='', showspikes=False,
                            range=[-0.6, 1.6]),
                 zaxis=dict(showticklabels=False, showgrid=False, zeroline=False,
-                           backgroundcolor='rgba(0,0,0,0)', title='', showspikes=False,
+                           backgroundcolor='rgba(245,247,250,0)', title='', showspikes=False,
                            range=[-0.2, 1.6]),
-                bgcolor='rgba(6,12,24,1)',
+                bgcolor='rgba(245,247,250,1)',
                 camera=dict(eye=dict(x=-1.8, y=-1.8, z=1.2), up=dict(x=0,y=0,z=1)),
                 aspectmode='cube',
             ),
-            legend=dict(orientation="h", y=-0.05, font=dict(size=9, color="#7ab3d4"),
+            legend=dict(orientation="h", y=-0.05, font=dict(size=9, color='#1565c0'),
                         bgcolor="rgba(0,0,0,0)"),
-            paper_bgcolor='#060c18',
+            paper_bgcolor='#f5f7fa',
             height=380,
             margin=dict(l=0, r=10, t=5, b=0),
         )
@@ -680,13 +681,13 @@ with col_right:
                                  annotation_text=f"下限 {alarm_low}°C",
                                  annotation_font_color="#ff9800")
             fig_inside.update_layout(
-                plot_bgcolor='#060c18', paper_bgcolor='#060c18',
+                plot_bgcolor='#ffffff', paper_bgcolor='#f5f7fa',
                 height=400, margin=dict(l=10, r=10, t=15, b=10),
-                legend=dict(orientation="h", y=-0.18, font=dict(size=10, color="#7ab3d4"),
+                legend=dict(orientation="h", y=-0.18, font=dict(size=10, color='#1565c0'),
                             bgcolor="rgba(0,0,0,0)"),
-                xaxis=dict(gridcolor='#1e3a5f', tickfont=dict(color="#7ab3d4")),
-                yaxis=dict(gridcolor='#1e3a5f', tickfont=dict(color="#7ab3d4"),
-                           title=dict(text="溫度 (°C)", font=dict(color="#7ab3d4"))),
+                xaxis=dict(gridcolor='#d0e4f7', tickfont=dict(color='#1a2a45')),
+                yaxis=dict(gridcolor='#d0e4f7', tickfont=dict(color='#1a2a45'),
+                           title=dict(text="溫度 (°C)", font=dict(color='#1565c0'))),
                 hovermode='x unified',
             )
             st.plotly_chart(fig_inside, use_container_width=True)
@@ -718,7 +719,7 @@ with col_right:
                                   line=dict(color="#f44336", dash="dot", width=1))
 
             fig_sub.update_layout(
-                plot_bgcolor='#060c18', paper_bgcolor='#060c18',
+                plot_bgcolor='#ffffff', paper_bgcolor='#f5f7fa',
                 height=700, margin=dict(l=10, r=10, t=30, b=10),
                 hovermode='x unified',
             )
@@ -728,8 +729,8 @@ with col_right:
             for ax in [f'xaxis{i}' if i > 1 else 'xaxis' for i in range(1, 9)] + \
                        [f'yaxis{i}' if i > 1 else 'yaxis' for i in range(1, 9)]:
                 fig_sub.update_layout(**{ax: dict(
-                    gridcolor='#1e3a5f', tickfont=dict(color='#7ab3d4', size=8),
-                    title_font=dict(color='#7ab3d4')
+                    gridcolor='#d0e4f7', tickfont=dict(color='#1a2a45', size=8),
+                    title_font=dict(color='#1565c0')
                 )})
             st.plotly_chart(fig_sub, use_container_width=True)
 
@@ -759,15 +760,15 @@ with col_right:
             hovertemplate="濕度: %{y:.1f}%RH<extra></extra>"
         ), row=2, col=1)
         fig_out.update_layout(
-            plot_bgcolor='#060c18', paper_bgcolor='#060c18',
+            plot_bgcolor='#ffffff', paper_bgcolor='#f5f7fa',
             height=400, margin=dict(l=10, r=10, t=30, b=10),
-            legend=dict(orientation="h", y=-0.12, font=dict(size=10, color="#7ab3d4"),
+            legend=dict(orientation="h", y=-0.12, font=dict(size=10, color='#1565c0'),
                         bgcolor="rgba(0,0,0,0)"),
             hovermode='x unified',
         )
         for axis in ['xaxis', 'xaxis2', 'yaxis', 'yaxis2']:
-            fig_out.update_layout(**{axis: dict(gridcolor='#1e3a5f',
-                                                tickfont=dict(color="#7ab3d4"))})
+            fig_out.update_layout(**{axis: dict(gridcolor='#d0e4f7',
+                                                tickfont=dict(color='#1a2a45'))})
         # Subplot title color fix
         for ann in fig_out.layout.annotations:
             ann.font.color = "#7ab3d4"
@@ -810,14 +811,14 @@ with col_right:
             hovertemplate="%{x}: %{y:.2f}°C<extra></extra>"
         ), row=2, col=2)
         fig_stat.update_layout(
-            plot_bgcolor='#060c18', paper_bgcolor='#060c18',
+            plot_bgcolor='#ffffff', paper_bgcolor='#f5f7fa',
             height=420, margin=dict(l=10, r=10, t=40, b=10),
             showlegend=False,
         )
         for axis in ['xaxis', 'xaxis2', 'xaxis3', 'xaxis4',
                      'yaxis', 'yaxis2', 'yaxis3', 'yaxis4']:
-            fig_stat.update_layout(**{axis: dict(gridcolor='#1e3a5f',
-                                                  tickfont=dict(color="#7ab3d4"))})
+            fig_stat.update_layout(**{axis: dict(gridcolor='#d0e4f7',
+                                                  tickfont=dict(color='#1a2a45'))})
         for ann in fig_stat.layout.annotations:
             ann.font.color = "#7ab3d4"
         st.plotly_chart(fig_stat, use_container_width=True)
@@ -841,15 +842,15 @@ with col_hm:
         y=ch_labels,
         colorscale=[[0,'#0a2463'],[0.4,'#1e5f9f'],[0.7,'#42a5f5'],[1,'#e3f2fd']],
         hoverongaps=False,
-        colorbar=dict(title=dict(text="°C", font=dict(color="#7ab3d4")),
-                      tickfont=dict(color="#7ab3d4"), thickness=12),
+        colorbar=dict(title=dict(text="°C", font=dict(color='#1565c0')),
+                      tickfont=dict(color='#1a2a45'), thickness=12),
         hovertemplate="%{y}<br>時間: %{x}<br>溫度: %{z:.2f}°C<extra></extra>"
     ))
     fig_hm.update_layout(
-        plot_bgcolor='#060c18', paper_bgcolor='#060c18',
+        plot_bgcolor='#ffffff', paper_bgcolor='#f5f7fa',
         height=260, margin=dict(l=10, r=60, t=10, b=10),
-        xaxis=dict(tickfont=dict(size=9, color="#7ab3d4"), nticks=12),
-        yaxis=dict(tickfont=dict(size=9, color="#7ab3d4")),
+        xaxis=dict(tickfont=dict(size=9, color='#1565c0'), nticks=12),
+        yaxis=dict(tickfont=dict(size=9, color='#1565c0')),
     )
     st.plotly_chart(fig_hm, use_container_width=True)
 
