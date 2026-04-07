@@ -98,14 +98,17 @@ st.markdown("""
 # 3D positions: x=左右(0=左,1=右), y=前後(0=前,1=後), z=上下(0=下,1=上)
 # Based on PPTX diagram: 8 corners of the cold storage box
 INSIDE_SENSORS = {
+    # x:0=左,1=右 | y:0=前,1=後 | z:0=下,1=上
+    # 前面: CH1(右上) CH2(左上) CH7(左下) CH8(右下)
+    # 後面: CH3(左上) CH4(右上) CH5(右下) CH6(左下)
     'CH1': {'label': 'CH1 前右上', 'col_key': 'CH1(測試通道_01)', 'pos': (1, 0, 1)},
     'CH2': {'label': 'CH2 前左上', 'col_key': 'CH2(測試通道_02)', 'pos': (0, 0, 1)},
-    'CH3': {'label': 'CH3 前左下', 'col_key': 'CH3(通道 3)',      'pos': (0, 0, 0)},
-    'CH4': {'label': 'CH4 前右下', 'col_key': 'CH4(通道 4)',      'pos': (1, 0, 0)},
-    'CH5': {'label': 'CH5 後右上', 'col_key': 'CH5(通道 5)',      'pos': (1, 1, 1)},
-    'CH6': {'label': 'CH6 後左上', 'col_key': 'CH6(通道 6)',      'pos': (0, 1, 1)},
-    'CH7': {'label': 'CH7 後左下', 'col_key': 'CH7(通道 7)',      'pos': (0, 1, 0)},
-    'CH8': {'label': 'CH8 後右下', 'col_key': 'CH8(通道 8)',      'pos': (1, 1, 0)},
+    'CH3': {'label': 'CH3 後左上', 'col_key': 'CH3(通道 3)',      'pos': (0, 1, 1)},
+    'CH4': {'label': 'CH4 後右上', 'col_key': 'CH4(通道 4)',      'pos': (1, 1, 1)},
+    'CH5': {'label': 'CH5 後右下', 'col_key': 'CH5(通道 5)',      'pos': (1, 1, 0)},
+    'CH6': {'label': 'CH6 後左下', 'col_key': 'CH6(通道 6)',      'pos': (0, 1, 0)},
+    'CH7': {'label': 'CH7 前左下', 'col_key': 'CH7(通道 7)',      'pos': (0, 0, 0)},
+    'CH8': {'label': 'CH8 前右下', 'col_key': 'CH8(通道 8)',      'pos': (1, 0, 0)},
 }
 
 OUTSIDE_SENSORS = {
@@ -504,28 +507,33 @@ with col_left:
         st.markdown("<div class='section-title'>Module 2 — 庫外感測器（冷庫機體外壁）</div>",
                     unsafe_allow_html=True)
 
-        # Module 2 outside sensor layout
-        # Positions around the outside of the box:
-        # CH104[上T]  → top center: (0.5, 0.5, 1.35)
-        # CH101[右T]  → right side: (1.35, 0.5, 0.5)
-        # CH102[左T]  → left side:  (-0.35, 0.5, 0.5)
-        # CH103[前T]  → front:      (0.5, -0.35, 0.5)
-        # CH106[前T溫溼] → front-low: (0.35, -0.35, 0.3)
-        # CH105[前H溼] → front-low-right: (0.65, -0.35, 0.3)
+        # Module 2 outside sensor layout (對照 PPTX Module2 圖):
+        # CH104[上T]  → 頂部中央
+        # CH101[右T]  → 右牆面中央（壓縮機）
+        # CH102[左T]  → 左牆面，前下方（PPTX顯示在左前下角）
+        # CH103[前T]  → 前牆面中上
+        # CH106[前T溫溼] → 前牆面左中
+        # CH105[前H溼]   → 前牆面左下（與CH106同側）
 
         out2_sensors = [
-            {'name':'CH104', 'label':'CH104\n上T',   'col':'CH104(通道 104)',         'unit':'°C',
-             'pos':(0.5, 0.5, 1.4),  'color':'#ffa726'},
-            {'name':'CH101', 'label':'CH101\n右T(壓縮機)', 'col':'CH101(一號壓縮機)', 'unit':'°C',
-             'pos':(1.4, 0.5, 0.5),  'color':'#ef5350'},
-            {'name':'CH102', 'label':'CH102\n左T',   'col':'CH102(通道 102)',         'unit':'°C',
-             'pos':(-0.4, 0.5, 0.5), 'color':'#42a5f5'},
-            {'name':'CH103', 'label':'CH103\n前T',   'col':'CH103(通道 103)',         'unit':'°C',
-             'pos':(0.5, -0.4, 0.7), 'color':'#66bb6a'},
-            {'name':'CH106', 'label':'CH106\n前T\n(溫溼度計)', 'col':'CH106(關鍵數據 (CH106))', 'unit':'°C',
-             'pos':(0.3, -0.4, 0.3), 'color':'#ab47bc'},
-            {'name':'CH105', 'label':'CH105\n前H\n(溫溼度計)', 'col':'CH105(通道 105)', 'unit':'%RH',
-             'pos':(0.7, -0.4, 0.3), 'color':'#26c6da'},
+            {'name':'CH104', 'label':'CH104\n上T',
+             'col':'CH104(通道 104)',         'unit':'°C',
+             'pos':(0.5, 0.5, 1.42), 'color':'#ffa726'},
+            {'name':'CH101', 'label':'CH101\n右T(壓縮機)',
+             'col':'CH101(一號壓縮機)', 'unit':'°C',
+             'pos':(1.42, 0.3, 0.55), 'color':'#ef5350'},
+            {'name':'CH102', 'label':'CH102\n左T',
+             'col':'CH102(通道 102)', 'unit':'°C',
+             'pos':(-0.42, 0.8, 0.15), 'color':'#42a5f5'},
+            {'name':'CH103', 'label':'CH103\n前T',
+             'col':'CH103(通道 103)', 'unit':'°C',
+             'pos':(0.55, -0.42, 0.65), 'color':'#66bb6a'},
+            {'name':'CH106', 'label':'CH106\n前T(溫溼度計)',
+             'col':'CH106(關鍵數據 (CH106))', 'unit':'°C',
+             'pos':(0.2, -0.42, 0.38), 'color':'#ab47bc'},
+            {'name':'CH105', 'label':'CH105\n前H(溫溼度計)',
+             'col':'CH105(通道 105)', 'unit':'%RH',
+             'pos':(0.2, -0.42, 0.18), 'color':'#26c6da'},
         ]
 
         fig_out3d = go.Figure()
@@ -634,41 +642,96 @@ with col_right:
 
     # ── Tab 1: Inside temperatures ──
     with tab1:
-        fig_inside = go.Figure()
-        colors_inside = px.colors.qualitative.Set2
-        if show_raw:
-            for i, (name, s) in enumerate(INSIDE_SENSORS.items()):
+        # ── 疊圖 / 不疊圖 切換 ──
+        overlay_mode = st.radio(
+            "顯示模式",
+            ["📊 疊圖（所有通道同一張）", "📋 不疊圖（各通道分開）"],
+            horizontal=True, label_visibility="collapsed"
+        )
+        overlay = "疊圖" in overlay_mode
+
+        colors_inside = ['#ef5350','#ffa726','#ffee58','#66bb6a',
+                         '#42a5f5','#ab47bc','#26c6da','#ff7043']
+        ch_list = list(INSIDE_SENSORS.items())
+
+        if overlay:
+            # ── 疊圖模式 ──
+            fig_inside = go.Figure()
+            for i, (name, s) in enumerate(ch_list):
                 fig_inside.add_trace(go.Scatter(
                     x=dff['時間'], y=dff[s['col_key']],
-                    name=f"{name}({s['label'].split(' ')[1]})",
-                    line=dict(width=1.5, color=colors_inside[i % len(colors_inside)]),
-                    opacity=0.85,
-                    hovertemplate=f"{name}: %{{y:.2f}}°C<extra></extra>"
+                    name=f"{name} {s['label'].split(' ')[1]}",
+                    line=dict(width=1.8, color=colors_inside[i]),
+                    opacity=0.9,
+                    hovertemplate=f"<b>{name}</b>: %{{y:.2f}}°C<extra></extra>"
                 ))
-        # Average line
-        fig_inside.add_trace(go.Scatter(
-            x=dff['時間'], y=dff['avg_inside_T'],
-            name='平均溫度', line=dict(width=3, color='white', dash='dash'),
-            hovertemplate="平均: %{y:.2f}°C<extra></extra>"
-        ))
-        # Alarm bands
-        fig_inside.add_hrect(y0=alarm_high, y1=alarm_high+5,
-                             fillcolor="rgba(244,67,54,0.1)", line_width=0)
-        fig_inside.add_hline(y=alarm_high, line=dict(color="#f44336", dash="dot", width=1.5),
-                             annotation_text=f"上限 {alarm_high}°C", annotation_font_color="#f44336")
-        fig_inside.add_hline(y=alarm_low, line=dict(color="#ff9800", dash="dot", width=1.5),
-                             annotation_text=f"下限 {alarm_low}°C", annotation_font_color="#ff9800")
-        fig_inside.update_layout(
-            plot_bgcolor='#060c18', paper_bgcolor='#060c18',
-            height=380, margin=dict(l=10, r=10, t=10, b=10),
-            legend=dict(orientation="h", y=-0.15, font=dict(size=10, color="#7ab3d4"),
-                        bgcolor="rgba(0,0,0,0)"),
-            xaxis=dict(gridcolor='#1e3a5f', tickfont=dict(color="#7ab3d4")),
-            yaxis=dict(gridcolor='#1e3a5f', tickfont=dict(color="#7ab3d4"),
-                       title=dict(text="溫度 (°C)", font=dict(color="#7ab3d4"))),
-            hovermode='x unified',
-        )
-        st.plotly_chart(fig_inside, use_container_width=True)
+            # Average line
+            fig_inside.add_trace(go.Scatter(
+                x=dff['時間'], y=dff['avg_inside_T'],
+                name='平均', line=dict(width=2.5, color='white', dash='dash'),
+                hovertemplate="平均: %{y:.2f}°C<extra></extra>"
+            ))
+            fig_inside.add_hrect(y0=alarm_high, y1=alarm_high+5,
+                                 fillcolor="rgba(244,67,54,0.08)", line_width=0)
+            fig_inside.add_hline(y=alarm_high, line=dict(color="#f44336", dash="dot", width=1.5),
+                                 annotation_text=f"上限 {alarm_high}°C",
+                                 annotation_font_color="#f44336")
+            fig_inside.add_hline(y=alarm_low, line=dict(color="#ff9800", dash="dot", width=1.5),
+                                 annotation_text=f"下限 {alarm_low}°C",
+                                 annotation_font_color="#ff9800")
+            fig_inside.update_layout(
+                plot_bgcolor='#060c18', paper_bgcolor='#060c18',
+                height=400, margin=dict(l=10, r=10, t=15, b=10),
+                legend=dict(orientation="h", y=-0.18, font=dict(size=10, color="#7ab3d4"),
+                            bgcolor="rgba(0,0,0,0)"),
+                xaxis=dict(gridcolor='#1e3a5f', tickfont=dict(color="#7ab3d4")),
+                yaxis=dict(gridcolor='#1e3a5f', tickfont=dict(color="#7ab3d4"),
+                           title=dict(text="溫度 (°C)", font=dict(color="#7ab3d4"))),
+                hovermode='x unified',
+            )
+            st.plotly_chart(fig_inside, use_container_width=True)
+
+        else:
+            # ── 不疊圖模式：2×4 subplots ──
+            fig_sub = make_subplots(
+                rows=4, cols=2,
+                shared_xaxes=True,
+                vertical_spacing=0.04,
+                horizontal_spacing=0.06,
+                subplot_titles=[f"{n} {s['label'].split(' ')[1]}"
+                                for n, s in ch_list],
+            )
+            for i, (name, s) in enumerate(ch_list):
+                row = i // 2 + 1
+                col = i % 2 + 1
+                fig_sub.add_trace(go.Scatter(
+                    x=dff['時間'], y=dff[s['col_key']],
+                    name=name,
+                    line=dict(width=1.5, color=colors_inside[i]),
+                    fill='tozeroy',
+                    fillcolor=colors_inside[i].replace(')', ',0.08)').replace('rgb', 'rgba'),
+                    hovertemplate=f"<b>{name}</b>: %{{y:.2f}}°C<extra></extra>",
+                    showlegend=False,
+                ), row=row, col=col)
+                # Alarm line per subplot
+                fig_sub.add_hline(y=alarm_high, row=row, col=col,
+                                  line=dict(color="#f44336", dash="dot", width=1))
+
+            fig_sub.update_layout(
+                plot_bgcolor='#060c18', paper_bgcolor='#060c18',
+                height=700, margin=dict(l=10, r=10, t=30, b=10),
+                hovermode='x unified',
+            )
+            for ann in fig_sub.layout.annotations:
+                ann.font.color = "#7ab3d4"
+                ann.font.size = 10
+            for ax in [f'xaxis{i}' if i > 1 else 'xaxis' for i in range(1, 9)] + \
+                       [f'yaxis{i}' if i > 1 else 'yaxis' for i in range(1, 9)]:
+                fig_sub.update_layout(**{ax: dict(
+                    gridcolor='#1e3a5f', tickfont=dict(color='#7ab3d4', size=8),
+                    title_font=dict(color='#7ab3d4')
+                )})
+            st.plotly_chart(fig_sub, use_container_width=True)
 
     # ── Tab 2: Outside environment ──
     with tab2:
